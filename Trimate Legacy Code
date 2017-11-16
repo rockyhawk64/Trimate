@@ -1,10 +1,3 @@
-import processing.sound.*;
-SoundFile menus;
-SoundFile battle;
-SoundFile battle1;
-SoundFile lazer;
-SoundFile battle2;
-SoundFile battle3;
 int w,a,s,d,space = 0;
 PImage title;
 String gun[];
@@ -51,13 +44,13 @@ PImage spistoll;
 PImage spistold;
 PImage pistoll;
 PImage uzi;
-String version = "1.3.4  alpha";
+String version = "1.0  alpha";
 PImage uzid;
 PImage uzil;
 PImage xm1;
 PImage xm1l;
 PImage xm1d;
-String kill = null;
+String kill = "0";
 PImage xm2;
 PImage bulletX;
 PImage bulletY;
@@ -70,7 +63,6 @@ PImage nickname;
 PImage arrows;
 PImage xm1m;
 PImage xm2m;
-PImage cursor;
 float x = 0;
 float y = 0;
 PImage dir;
@@ -81,34 +73,21 @@ PImage Edown;
 PImage Eup;
 PImage Eleft;
 PImage Eright;
-float musicend;
 float menu = 0;
 float game = 0;
 float loadnum = 0;
 float exitgame = 0;
 int running = 1;
-float soundsec;
 float camX,camY;
 int bulleton = 0;
 float bulX = 0;
 float bulY = 0;
 float bulletm = 0;
-void settings() {
-  fullScreen();
-}
 void setup(){
   orientation(LANDSCAPE);
   size(displayWidth,displayHeight,P2D);
   background(0);
-  menus = new SoundFile(this, "menu.mp3");
-  battle1 = new SoundFile(this, "battle1.mp3");
-  battle2 = new SoundFile(this, "battle2.mp3");
-  battle3 = new SoundFile(this, "battle3.mp3");
-  lazer = new SoundFile(this, "lazer.wav");
-  battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
-  menus.play();
-  musicend = menus.duration();
-  soundsec = millis() / 1000;
+  gun[0] = "1";
   ok = loadImage("ok.png");
   no = loadImage("no.png");
   exit = loadImage("exitgame.png");
@@ -168,7 +147,6 @@ void setup(){
   uzim = loadImage("guns/UZIL.png");
   xm1m = loadImage("guns/XM-1L.png");
   xm2m = loadImage("guns/XM-2L.png");
-  cursor = loadImage("cursor.png");
   dir = down;
   title.resize(width/2,height/2);
   start.resize(width/5,height/5);
@@ -186,11 +164,9 @@ void setup(){
   Eright.resize(width/15,width/15);
   menugun();
   gunset();
-  cursor.resize(32,32);
   menu = 1;
-  gun = loadStrings("data/gun.txt");
-  name = loadStrings("data/name.txt");
-  kills = loadStrings("data/dat.txt");
+  name[0] = "Blue";
+  kills[0] = "1";
   uk = createFont("uk.otf", 20);
 }
 void draw(){
@@ -223,7 +199,6 @@ void draw(){
   }
   if(game == 1) {
     imageMode(CENTER);
-    menus.stop();
     dir.resize(width/15,width/15);
     render();
     enemy();
@@ -278,36 +253,21 @@ void draw(){
     text("You killed: " + dkill + " Reds",width/2.3,height/2.6);
     image(ok,width/2,height/1.6);
   }
-  image(cursor,mouseX,mouseY);
-  if(musicend < (millis() / 1000) - soundsec) {
-    if(menu == 1) {
-      menus.play();
-      musicend = menus.duration();
-      soundsec = millis() / 1000;
-    }
-    if(game == 1 || exitgame == 1) {
-      battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
-      battle.play();
-      musicend = battle.duration();
-      soundsec = millis() / 1000;
-    }
-  }
   text("FPS " + frameRate, width-100, 20);
 }
-void mousePressed() {
+void touchStarted() {
   if(nick == 1) {
-    if(mouseX < width/2 + (width/5/2) && mouseX > width/2 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
+    if(touches[0].x < width/2 + (width/5/2) && touches[0].x > width/2 - (width/5/2) && touches[0].y < height/1.4 + (height/5/2) && touches[0].y > height/1.4 - (height/5/2)) {
       nick = 0;
       menu = 1;
-      saveStrings("data/name.txt",name);
       
     }
   }
   if(mapse == 1) {
-    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
+    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/1.4 + (height/5/2) && touches[0].y > height/1.4 - (height/5/2)) {
       backm = 1;
     }
-    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/2 + (height/5/2) && mouseY > height/2 - (height/5/2)) {
+    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/2 + (height/5/2) && touches[0].y > height/2 - (height/5/2)) {
       exitgame = 0;
       dir = down;
       mapse = 0;
@@ -327,13 +287,8 @@ void mousePressed() {
       camX = 0;
       camY = 0;
       maps.resize(width*2,width*2);
-      menus.stop();
-      battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
-      battle.play();
-      musicend = battle.duration();
-      soundsec = millis() / 1000;
     }
-    if(mouseX < width/1.5 && mouseX > width/1.5 - (width/5/2) && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
+    if(touches[0].x < width/1.5 && touches[0].x > width/1.5 - (width/5/2) && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
       if(map == 2) {
         map = 1;
         maps = loadImage("maps/back1.png");
@@ -351,7 +306,7 @@ void mousePressed() {
         maps = loadImage("maps/back4.png");
       }
     }
-    if(mouseX < width/1.5 + (width/5/2) && mouseX > width/1.5 && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
+    if(touches[0].x < width/1.5 + (width/5/2) && touches[0].x > width/1.5 && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
       if(map == 4) {
         map = 5;
         maps = loadImage("maps/back5.png");
@@ -371,21 +326,23 @@ void mousePressed() {
     }
   }
   if(menu == 1) {
-    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/2 + (height/5/2) && mouseY > height/2 - (height/5/2) && exp == 0) {
+    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/1.4 + (height/5/2) && touches[0].y > height/1.4 - (height/5/2)) {
+    }
+    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/2 + (height/5/2) && touches[0].y > height/2 - (height/5/2) && exp == 0) {
       exitgame = 0;
       dir = down;
       menu = 0;
       game = 0;
       mapse = 1;
     }
-    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/3.4 + (height/5/2) && mouseY > height/3.4 - (height/5/2)) {
+    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/3.4 + (height/5/2) && touches[0].y > height/3.4 - (height/5/2)) {
       exitgame = 0;
       menu = 0;
       game = 0;
       mapse = 0;
       nick = 1;
     }
-    if(mouseX < width/1.5 && mouseX > width/1.5 - (width/5/2) && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
+    if(touches[0].x < width/1.5 && touches[0].x > width/1.5 - (width/5/2) && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
       if(int(gun[0]) == 2) {
         gun[0] = "1";
       }
@@ -398,10 +355,8 @@ void mousePressed() {
       if(int(gun[0]) == 5) {
         gun[0] = "4";
       }
-      saveStrings("data/gun.txt",gun);
-      saveStrings("data/dat.txt",kills);
     }
-    if(mouseX < width/1.5 + (width/5/2) && mouseX > width/1.5 && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
+    if(touches[0].x < width/1.5 + (width/5/2) && touches[0].x > width/1.5 && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
       if(int(gun[0]) == 4) {
         gun[0] = "5";
       }
@@ -414,8 +369,6 @@ void mousePressed() {
       if(int(gun[0]) == 1) {
         gun[0] = "2";
       }
-      saveStrings("data/gun.txt",gun);
-      saveStrings("data/dat.txt",kills);
     }
   }
   if(backm == 1){
@@ -426,39 +379,31 @@ void mousePressed() {
       backm = 0;
   }
  if(exitgame == 1) {
-   if(mouseX < width/1.6 + (width/6/2) && mouseX > width/1.6 - (width/5/2) && mouseY < height/1.6 + (height/6/2) && mouseY > height/1.6 - (height/6/2)) {
+   if(touches[0].x < width/1.6 + (width/6/2) && touches[0].x > width/1.6 - (width/5/2) && touches[0].y < height/1.6 + (height/6/2) && touches[0].y > height/1.6 - (height/6/2)) {
      exitgame = 0;
      left = loadImage("Left.png");
      menu = 1;
      game = 0;
-     battle.stop();
-     menus.play();
-     musicend = menus.duration();
-     soundsec = millis() / 1000;
    }
-   if(mouseX < width/2.6 + (width/6/2) && mouseX > width/2.6 - (width/5/2) && mouseY < height/1.6 + (height/6/2) && mouseY > height/1.6 - (height/6/2)) {
+   if(touches[0].x < width/2.6 + (width/6/2) && touches[0].x > width/2.6 - (width/5/2) && touches[0].y < height/1.6 + (height/6/2) && touches[0].y > height/1.6 - (height/6/2)) {
      exitgame = 0;
      game = 1;
    }
  }
  if(death == 1) {
-   if(mouseX < width/2 + (width/6/2) && mouseX > width/2 - (width/5/2) && mouseY < height/1.6 + (height/6/2) && mouseY > height/1.6 - (height/6/2)) {
+   if(touches[0].x < width/2 + (width/6/2) && touches[0].x > width/2 - (width/5/2) && touches[0].y < height/1.6 + (height/6/2) && touches[0].y > height/1.6 - (height/6/2)) {
      exitgame = 0;
      death = 0;
      left = loadImage("Left.png");
      menu = 1;
      game = 0;
-     battle.stop();
-     menus.play();
-     musicend = menus.duration();
-     soundsec = millis() / 1000;
    }
  }
  if(game == 1 && exitgame == 0) {
    space = 1;
  }
 }
-void mouseReleased() {
+/*void touchEnded() {
   if(game == 1 && exitgame == 0) {
     space = 0;
   }
@@ -488,16 +433,16 @@ void keyPressed() {
       }
     }
   }
-  if(key == 'w' || keyCode == UP) {
+  if(key == 'w' || keyCode == UP || key == 'W') {
     w = 1;
   }
-  if(key == 'a' || keyCode == LEFT) {
+  if(key == 'a' || keyCode == LEFT || key == 'A') {
     a = 1;
   }
-  if(key == 'd' || keyCode == RIGHT) {
+  if(key == 'd' || keyCode == RIGHT || key == 'D') {
     d = 1;
   }
-  if(key == 's' || keyCode == DOWN) {
+  if(key == 's' || keyCode == DOWN || key == 'S') {
     s = 1;
   }
   if(key == ' ') {
@@ -505,22 +450,22 @@ void keyPressed() {
   }
 }
 void keyReleased() {
-  if(key == 'w' || keyCode == UP) {
+  if(key == 'w' || keyCode == UP || key == 'W') {
     w = 0;
   }
-  if(key == 'a' || keyCode == LEFT) {
+  if(key == 'a' || keyCode == LEFT || key == 'A') {
     a = 0;
   }
-  if(key == 's' || keyCode == DOWN) {
+  if(key == 's' || keyCode == DOWN || key == 'S') {
     s = 0;
   }
-  if(key == 'd' || keyCode == RIGHT) {
+  if(key == 'd' || keyCode == RIGHT || key == 'D') {
     d = 0;
   }
   if(key == ' ') {
     space = 0;
   }
-}
+}*/
 void render() {
   imageMode(CENTER);
   image(maps,x+width+camX,y+width+camY);
@@ -639,28 +584,24 @@ void shoot() {
     bulletm = 0;
     bulY = -y;
     bulX = -x;
-    lazer.play();
   }
   if(dir == down && bulleton == 0) {
     bulleton = 2;
     bulletm = 0;
     bulY = -y;
     bulX = -x;
-    lazer.play();
   }
   if(dir == left && bulleton == 0) {
     bulleton = 3;
     bulletm = 0;
     bulY = -y;
     bulX = -x;
-    lazer.play();
   }
   if(dir == right && bulleton == 0) {
     bulleton = 4;
     bulletm = 0;
     bulY = -y;
     bulX = -x;
-    lazer.play();
   }
 }
 void bulletrender() {
@@ -781,7 +722,6 @@ void Edie1() {
 }
 void die() {
   if(kill != ""){kills[0] = kill + kills[0];}
-  saveStrings("data/dat.txt",kills);
   exitgame = 0;
   menu = 0;
   death = 1;
