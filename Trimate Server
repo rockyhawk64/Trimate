@@ -1,2 +1,72 @@
-# Trimate
-Trimate Game
+import processing.net.*;
+Server server;
+String iM = "";
+int port = 5204;
+String players = "";
+String positions[] = {};
+String col[];
+void setup(){
+  size(800, 400,P2D);
+  server = new Server(this, port);
+}
+void draw(){
+  background(0);
+  Client client = server.available();
+  if (client != null) {
+    iM = client.readStringUntil('\n');
+    if(positions.length == 0){
+      String join[] = {client.ip() + "=" + iM};
+      positions = join;
+    }
+    String found = null;
+    String ip = client.ip();
+    if(positions.length != 0){
+      for(int i = 0; i <= positions.length-1; i++) {
+        if(positions != null){
+          if(ip.equals(split(positions[i], "=")[0])){
+            found = str(i);
+            break;
+          }
+        }
+      }
+    }
+    if(found != null){
+      positions[int(found)] = client.ip() + "=" + iM;
+    }else{
+      append(positions, client.ip() + "=" + iM);
+    }
+    server.write(join(positions, '$'));
+  }
+  if(positions != null){
+    col = new String[0];
+    for(int i = 0; i <= positions.length-1; i++) {
+      if(split(positions[i], "=")[0].equals(split(players, "$"))){
+        //not used
+      }else{
+        for(int ii = 0; col.length == positions.length; ii++) {
+          if(ii != i){
+            append(col, positions[ii]);
+          }
+        }
+      }
+    }
+    positions = col;
+  }
+}
+void serverEvent(Server server, Client client) {
+  players = players + "$" + client.ip();
+  println(client.ip() + " Joined The Game");
+}
+void disconnectEvent(Client someClient) {
+  col = new String[0];
+  for(int i = 0; i <= split(players, '$').length-1; i++) {
+    if(split(players, '$')[i].equals(someClient.ip())){
+      for(int ii = 0; col.length == split(players, '$').length; ii++) {
+        if(ii != i){
+          append(col, split(players, '$')[ii]);
+        }
+      }
+    }
+  }
+  players = join(col, '$');
+}
