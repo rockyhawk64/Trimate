@@ -1,7 +1,23 @@
+import vsync.*;
+import processing.net.*;
+import processing.sound.*;
+SoundFile menus;
+SoundFile battle;
+SoundFile battle1;
+SoundFile lazer;
+SoundFile battle2;
+SoundFile battle3;
+Client client;
 int w,a,s,d,space = 0;
+String dirr;
 PImage title;
+PImage join;
+PImage sound;
+PImage nsound;
 String gun[];
 String kills[];
+String send;
+String players[];
 int killss;
 int speed = 50;
 String dkill = "0";
@@ -9,17 +25,20 @@ String name[];
 PImage deathb;
 PImage back1;
 PImage back2;
+String masf;
 PImage back3;
 PImage back4;
 PImage back5;
 int death = 0;
 PImage map1;
 int nick = 0;
+int joinn = 0;
 PImage map2;
 PImage map3;
 PImage map4;
 PImage map5;
 PFont uk;
+PFont normal;
 int map = 1;
 int mapse = 0;
 float bX;
@@ -31,6 +50,7 @@ PImage start;
 PImage quit;
 PImage back;
 int backm = 0;
+int soundd;
 int exp = 0;
 PImage down;
 PImage left;
@@ -39,6 +59,7 @@ PImage up;
 PImage lock;
 PImage pistol;
 PImage pistold;
+PImage sp;
 PImage spistol;
 PImage spistoll;
 PImage spistold;
@@ -50,7 +71,9 @@ PImage uzil;
 PImage xm1;
 PImage xm1l;
 PImage xm1d;
-String kill = "0";
+String kill = null;
+String ipp;
+int single;
 PImage xm2;
 PImage bulletX;
 PImage bulletY;
@@ -63,6 +86,7 @@ PImage nickname;
 PImage arrows;
 PImage xm1m;
 PImage xm2m;
+PImage cursor;
 float x = 0;
 float y = 0;
 PImage dir;
@@ -73,23 +97,35 @@ PImage Edown;
 PImage Eup;
 PImage Eleft;
 PImage Eright;
+float musicend;
 float menu = 0;
 float game = 0;
 float loadnum = 0;
 float exitgame = 0;
 int running = 1;
+float soundsec;
 float camX,camY;
 int bulleton = 0;
 float bulX = 0;
 float bulY = 0;
 float bulletm = 0;
+void settings() {
+  fullScreen();
+}
 void setup(){
-  orientation(LANDSCAPE);
   size(displayWidth,displayHeight,P2D);
   background(0);
-  gun[0] = "1";
+  noCursor();
+  menus = new SoundFile(this, "menu.mp3");
+  battle1 = new SoundFile(this, "battle1.mp3");
+  battle2 = new SoundFile(this, "battle2.mp3");
+  battle3 = new SoundFile(this, "battle3.mp3");
+  lazer = new SoundFile(this, "lazer.wav");
+  battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
   ok = loadImage("ok.png");
   no = loadImage("no.png");
+  sound = loadImage("sound.png");
+  nsound = loadImage("nsound.png");
   exit = loadImage("exitgame.png");
   deathb = loadImage("death.png");
   back = loadImage("back.png");
@@ -111,6 +147,8 @@ void setup(){
   map5.resize(width/5,width/5);
   title = loadImage("title.png");
   start = loadImage("start.png");
+  join = loadImage("join.png");
+  sp = loadImage("sp.png");
   nickname = loadImage("nickname.png");
   arrows = loadImage("arrows.png");
   quit = loadImage("quit.png");
@@ -126,7 +164,10 @@ void setup(){
   bulletY = loadImage("bulletY.png");
   bulletX.resize(width/25,width/25);
   bulletY.resize(width/25,width/25);
+  sound.resize(width/25,width/25);
+  nsound.resize(width/25,width/25);
   lock = loadImage("guns/locked.png");
+  lock.resize(width/6,height/6);
   pistol = loadImage("guns/Pistol.png");
   pistoll = loadImage("guns/PistolL.png");
   pistold = loadImage("guns/PistolD.png");
@@ -147,9 +188,13 @@ void setup(){
   uzim = loadImage("guns/UZIL.png");
   xm1m = loadImage("guns/XM-1L.png");
   xm2m = loadImage("guns/XM-2L.png");
+  cursor = loadImage("cursor.png");
   dir = down;
+  dirr = "down";
   title.resize(width/2,height/2);
   start.resize(width/5,height/5);
+  join.resize(width/5,height/5);
+  sp.resize(width/5,height/5);
   nickname.resize(width/5,height/5);
   arrows.resize(width/5,height/5);
   quit.resize(width/5,height/5);
@@ -164,45 +209,113 @@ void setup(){
   Eright.resize(width/15,width/15);
   menugun();
   gunset();
+  cursor.resize(32,32);
   menu = 1;
-  name[0] = "Blue";
-  kills[0] = "1";
+  gun = loadStrings("data/gun.txt");
+  soundd = int(loadStrings("data/sound.txt")[0]);
+  name = loadStrings("data/name.txt");
+  kills = loadStrings("data/dat.txt");
   uk = createFont("uk.otf", 20);
+  normal = createFont("verdanab.ttf", 20);
+  ipp = "127.0.0.1:5204";
+  if(soundd == 1){
+    menus.amp(1);
+    battle.amp(1);
+    battle1.amp(1);
+    battle2.amp(1);
+    battle3.amp(1);
+    lazer.amp(1);
+  }else{
+    menus.amp(0);
+    battle.amp(0);
+    battle1.amp(0);
+    battle2.amp(0);
+    battle3.amp(0);
+    lazer.amp(0);
+  }
+  menus.play();
+  musicend = menus.duration();
+  soundsec = millis() / 1000;
 }
 void draw(){
   clear();
   textSize(20);
   textFont(uk);
+  if(soundd == 1){
+    menus.amp(1);
+    battle.amp(1);
+    battle1.amp(1);
+    battle2.amp(1);
+    battle3.amp(1);
+    lazer.amp(1);
+  }else{
+    menus.amp(0);
+    battle.amp(0);
+    battle1.amp(0);
+    battle2.amp(0);
+    battle3.amp(0);
+    lazer.amp(0);
+  }
   if(menu == 1) {
     left.resize(width/6,width/6);
     imageMode(CENTER);
+    textAlign(LEFT);
     text(version,0,20);
+    textAlign(CENTER);
     image(title,width/2,100);
     image(start,width/4,height/2);
     image(nickname,width/4,height/3.4);
-    text(name[0], width/1.6, height/2.3);
+    textFont(normal);
+    text(name[0], width/1.5, height/2.3);
+    textFont(uk);
     image(arrows,width/1.5,height/3);
     image(quit,width/4,height/1.4);
+    if(soundd == 1){
+      image(sound,width/40,height/1.05);
+    }else{
+      image(nsound,width/40,height/1.05);
+    }
     image(left,width/1.5,height/1.65);
     killss = kills[0].length()-1;
-    if(int(gun[0]) == 1){image(pistolm,width/1.65,height/1.45); text("Starter Pistol",width/1.6,height/1.2);  exp = 0;}
-    if(int(gun[0]) == 2 && killss > 49){image(spistolm,width/1.65,height/1.45); text("Scope Pistol",width/1.6,height/1.2); exp = 0;}else{if(int(gun[0]) == 2){image(lock,width/1.65,height/1.45); text("Collect 50 Experience to Unlock",width/1.6,height/1.2); exp = 1;}}
-    if(int(gun[0]) == 3 && killss > 124){image(uzim,width/1.65,height/1.45); text("UZI",width/1.6,height/1.2); exp = 0;}else{if(int(gun[0]) == 3){image(lock,width/1.65,height/1.45); text("Collect 125 Experience to Unlock",width/1.6,height/1.2); exp = 1;}}
-    if(int(gun[0]) == 4 && killss > 199){image(xm1m,width/1.65,height/1.45); text("XM-1",width/1.6,height/1.2); exp = 0;}else{if(int(gun[0]) == 4){image(lock,width/1.65,height/1.45); text("Collect 200 Experience to Unlock",width/1.6,height/1.2); exp = 1;}}
-    if(int(gun[0]) == 5 && killss > 274){image(xm2m,width/1.65,height/1.45); text("XM-2",width/1.6,height/1.2); exp = 0;}else{if(int(gun[0]) == 5){image(lock,width/1.65,height/1.45); text("Collect 275 Experience to Unlock",width/1.6,height/1.2); exp = 1;}}
-    text(str(killss) + " Experience",width/1.6,height/1.15);
+    if(int(gun[0]) == 1){image(pistolm,width/1.65,height/1.45); text("Starter Pistol",width/1.5,height/1.2);  exp = 0;}
+    if(int(gun[0]) == 2 && killss > 49){image(spistolm,width/1.65,height/1.45); text("Scope Pistol",width/1.5,height/1.2); exp = 0;}else{if(int(gun[0]) == 2){image(lock,width/1.65,height/1.45); text("Collect 50 Experience to Unlock",width/1.5,height/1.2); exp = 1;}}
+    if(int(gun[0]) == 3 && killss > 124){image(uzim,width/1.65,height/1.45); text("UZI",width/1.5,height/1.2); exp = 0;}else{if(int(gun[0]) == 3){image(lock,width/1.65,height/1.45); text("Collect 125 Experience to Unlock",width/1.5,height/1.2); exp = 1;}}
+    if(int(gun[0]) == 4 && killss > 199){image(xm1m,width/1.65,height/1.45); text("XM-1",width/1.5,height/1.2); exp = 0;}else{if(int(gun[0]) == 4){image(lock,width/1.65,height/1.45); text("Collect 200 Experience to Unlock",width/1.5,height/1.2); exp = 1;}}
+    if(int(gun[0]) == 5 && killss > 274){image(xm2m,width/1.65,height/1.45); text("XM-2",width/1.5,height/1.2); exp = 0;}else{if(int(gun[0]) == 5){image(lock,width/1.65,height/1.45); text("Collect 275 Experience to Unlock",width/1.5,height/1.2); exp = 1;}}
+    text(str(killss) + " Experience",width/1.5,height/1.15);
   }
   if(nick == 1) {
-    text("Choose Nickname",width/2.3,height/3);
-    text(name[0],width/2.15,height/2);
+    textAlign(CENTER);
+    textSize(40);
+    text("Choose Nickname",width/2,height/3);
+    textSize(30);
+    textFont(normal);
+    text(name[0],width/2,height/2);
     image(back,width/2,height/1.4);
+  }
+  if(joinn == 1) {
+    textAlign(CENTER);
+    textSize(40);
+    text("Type IP",width/2,height/3);
+    textSize(30);
+    textFont(normal);
+    text(ipp,width/2,height/2);
+    image(start,width/2,height/1.4);
+    image(back,width/4,height/1.4);
   }
   if(game == 1) {
     imageMode(CENTER);
+    menus.stop();
     dir.resize(width/15,width/15);
     render();
-    enemy();
-    enemy1();
+    if(single == 1){
+      enemy();
+      enemy1();
+    }else{
+      positions();
+      send = name[0].replaceAll("=", "-") + "=" + x + "=" + y + "=" + bulX + "=" + bulY + "=" + dirr + "=" + gun[0] + '\n';
+      client.write(send);
+    }
     image(dir,width/2+camX,height/2+camY);
     gun();
     if(space == 1) {
@@ -212,25 +325,30 @@ void draw(){
     if(w == 1) {
       y+= width/175;
       dir = up;
+      dirr = "up";
     }
     if(s == 1) {
       y-= width/175;
       dir = down;
+      dirr = "down";
     }
     if(a == 1) {
       x+= width/175;
       dir = left;
+      dirr = "left";
     }
     if(d == 1) {
       x-= width/175;
       dir = right;
+      dirr = "right";
     }
   }
   if(mapse == 1) {
     imageMode(CENTER);
     text(version,0,20);
     image(title,width/2,100);
-    image(start,width/4,height/2);
+    image(join,width/4,height/2);
+    image(start,width/4,height/3.4);
     image(arrows,width/1.5,height/3);
     image(back,width/4,height/1.4);
     if(map == 1){image(map1,width/1.5,height/1.65);text("Classic Map",width/1.6,height/1.2);}
@@ -253,21 +371,60 @@ void draw(){
     text("You killed: " + dkill + " Reds",width/2.3,height/2.6);
     image(ok,width/2,height/1.6);
   }
-  text("FPS " + frameRate, width-100, 20);
+  if(game != 1 || exitgame != 0){
+    image(cursor,mouseX,mouseY);
+  }
+  if(musicend < (millis() / 1000) - soundsec) {
+    if(menu == 1) {
+      menus.play();
+      musicend = menus.duration();
+      soundsec = millis() / 1000;
+    }
+    if(game == 1 || exitgame == 1) {
+      battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
+      battle.play();
+      musicend = battle.duration();
+      soundsec = millis() / 1000;
+    }
+  }
+  textAlign(LEFT);
+  text("FPS " + split(str(frameRate), '.')[0], width-100, 20);
 }
-void touchStarted() {
+void mousePressed() {
   if(nick == 1) {
-    if(touches[0].x < width/2 + (width/5/2) && touches[0].x > width/2 - (width/5/2) && touches[0].y < height/1.4 + (height/5/2) && touches[0].y > height/1.4 - (height/5/2)) {
+    if(mouseX < width/2 + (width/5/2) && mouseX > width/2 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
       nick = 0;
       menu = 1;
+      saveStrings("data/name.txt",name);
       
     }
   }
-  if(mapse == 1) {
-    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/1.4 + (height/5/2) && touches[0].y > height/1.4 - (height/5/2)) {
-      backm = 1;
+  if(joinn == 1) {
+    if(mouseX < width/2 + (width/5/2) && mouseX > width/2 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
+      if(split(ipp,':').length == 2){
+        client = new Client(this, split(ipp,':')[0], int(split(ipp,':')[1]));
+      }else{
+        client = new Client(this, ipp, 5204);
+      }
+      game = 1;
+      joinn = 0;
+      maps.resize(width*2,width*2);
+      menus.stop();
+      battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
+      battle.play();
+      musicend = battle.duration();
+      soundsec = millis() / 1000;
     }
-    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/2 + (height/5/2) && touches[0].y > height/2 - (height/5/2)) {
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
+      joinn = 0;
+      mapse = 1;
+      menu = 0;
+      game = 0;
+    }
+  }
+  if(mapse == 1) {
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/3.4 + (height/5/2) && mouseY > height/3.4 - (height/5/2)) {
+      single = 1;
       exitgame = 0;
       dir = down;
       mapse = 0;
@@ -287,8 +444,34 @@ void touchStarted() {
       camX = 0;
       camY = 0;
       maps.resize(width*2,width*2);
+      menus.stop();
+      battle = new SoundFile(this, "battle" + int(random(1,3)) + ".mp3");
+      battle.play();
+      musicend = battle.duration();
+      soundsec = millis() / 1000;
     }
-    if(touches[0].x < width/1.5 && touches[0].x > width/1.5 - (width/5/2) && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
+      backm = 1;
+    }
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/2 + (height/5/2) && mouseY > height/2 - (height/5/2)) {
+      //initial join button
+      single = 0;
+      exitgame = 0;
+      dir = down;
+      mapse = 0;
+      joinn = 1;
+      x = 0;
+      y = 0;
+      if(int(gun[0]) == 1){speed = 20;}
+      if(int(gun[0]) == 2){speed = 30;}
+      if(int(gun[0]) == 3){speed = 40;}
+      if(int(gun[0]) == 4){speed = 50;}
+      if(int(gun[0]) == 5){speed = 60;}
+      kill = "";
+      camX = 0;
+      camY = 0;
+    }
+    if(mouseX < width/1.5 && mouseX > width/1.5 - (width/5/2) && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
       if(map == 2) {
         map = 1;
         maps = loadImage("maps/back1.png");
@@ -306,7 +489,7 @@ void touchStarted() {
         maps = loadImage("maps/back4.png");
       }
     }
-    if(touches[0].x < width/1.5 + (width/5/2) && touches[0].x > width/1.5 && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
+    if(mouseX < width/1.5 + (width/5/2) && mouseX > width/1.5 && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
       if(map == 4) {
         map = 5;
         maps = loadImage("maps/back5.png");
@@ -326,23 +509,33 @@ void touchStarted() {
     }
   }
   if(menu == 1) {
-    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/1.4 + (height/5/2) && touches[0].y > height/1.4 - (height/5/2)) {
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/1.4 + (height/5/2) && mouseY > height/1.4 - (height/5/2)) {
+      saveStrings("data/gun.txt",gun);
+      exit();
     }
-    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/2 + (height/5/2) && touches[0].y > height/2 - (height/5/2) && exp == 0) {
+    if(mouseX < width/40 + (width/20/2) && mouseX > width/40 - (width/20/2) && mouseY < height/1.05 + (width/20/2) && mouseY > height/1.05 - (width/20/2)) {
+      if(soundd == 1){
+        soundd = 0;
+      }else{
+        soundd = 1;
+      }
+      saveStrings("data/sound.txt",split(str(soundd), '$'));
+    }
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/2 + (height/5/2) && mouseY > height/2 - (height/5/2) && exp == 0) {
       exitgame = 0;
       dir = down;
       menu = 0;
       game = 0;
       mapse = 1;
     }
-    if(touches[0].x < width/4 + (width/5/2) && touches[0].x > width/4 - (width/5/2) && touches[0].y < height/3.4 + (height/5/2) && touches[0].y > height/3.4 - (height/5/2)) {
+    if(mouseX < width/4 + (width/5/2) && mouseX > width/4 - (width/5/2) && mouseY < height/3.4 + (height/5/2) && mouseY > height/3.4 - (height/5/2)) {
       exitgame = 0;
       menu = 0;
       game = 0;
       mapse = 0;
       nick = 1;
     }
-    if(touches[0].x < width/1.5 && touches[0].x > width/1.5 - (width/5/2) && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
+    if(mouseX < width/1.5 && mouseX > width/1.5 - (width/5/2) && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
       if(int(gun[0]) == 2) {
         gun[0] = "1";
       }
@@ -355,8 +548,10 @@ void touchStarted() {
       if(int(gun[0]) == 5) {
         gun[0] = "4";
       }
+      saveStrings("data/gun.txt",gun);
+      saveStrings("data/dat.txt",kills);
     }
-    if(touches[0].x < width/1.5 + (width/5/2) && touches[0].x > width/1.5 && touches[0].y < height/3 + (height/5/2) && touches[0].y > height/3 - (height/5/2)) {
+    if(mouseX < width/1.5 + (width/5/2) && mouseX > width/1.5 && mouseY < height/3 + (height/5/2) && mouseY > height/3 - (height/5/2)) {
       if(int(gun[0]) == 4) {
         gun[0] = "5";
       }
@@ -369,6 +564,8 @@ void touchStarted() {
       if(int(gun[0]) == 1) {
         gun[0] = "2";
       }
+      saveStrings("data/gun.txt",gun);
+      saveStrings("data/dat.txt",kills);
     }
   }
   if(backm == 1){
@@ -379,31 +576,42 @@ void touchStarted() {
       backm = 0;
   }
  if(exitgame == 1) {
-   if(touches[0].x < width/1.6 + (width/6/2) && touches[0].x > width/1.6 - (width/5/2) && touches[0].y < height/1.6 + (height/6/2) && touches[0].y > height/1.6 - (height/6/2)) {
+   if(mouseX < width/1.6 + (width/6/2) && mouseX > width/1.6 - (width/5/2) && mouseY < height/1.6 + (height/6/2) && mouseY > height/1.6 - (height/6/2)) {
+     if(single == 0){
+       client.stop();
+     }
      exitgame = 0;
      left = loadImage("Left.png");
      menu = 1;
      game = 0;
+     battle.stop();
+     menus.play();
+     musicend = menus.duration();
+     soundsec = millis() / 1000;
    }
-   if(touches[0].x < width/2.6 + (width/6/2) && touches[0].x > width/2.6 - (width/5/2) && touches[0].y < height/1.6 + (height/6/2) && touches[0].y > height/1.6 - (height/6/2)) {
+   if(mouseX < width/2.6 + (width/6/2) && mouseX > width/2.6 - (width/5/2) && mouseY < height/1.6 + (height/6/2) && mouseY > height/1.6 - (height/6/2)) {
      exitgame = 0;
      game = 1;
    }
  }
  if(death == 1) {
-   if(touches[0].x < width/2 + (width/6/2) && touches[0].x > width/2 - (width/5/2) && touches[0].y < height/1.6 + (height/6/2) && touches[0].y > height/1.6 - (height/6/2)) {
+   if(mouseX < width/2 + (width/6/2) && mouseX > width/2 - (width/5/2) && mouseY < height/1.6 + (height/6/2) && mouseY > height/1.6 - (height/6/2)) {
      exitgame = 0;
      death = 0;
      left = loadImage("Left.png");
      menu = 1;
      game = 0;
+     battle.stop();
+     menus.play();
+     musicend = menus.duration();
+     soundsec = millis() / 1000;
    }
  }
  if(game == 1 && exitgame == 0) {
    space = 1;
  }
 }
-/*void touchEnded() {
+void mouseReleased() {
   if(game == 1 && exitgame == 0) {
     space = 0;
   }
@@ -416,6 +624,16 @@ void keyPressed() {
     if((key >= 'A' && key <= 'z') || key == ' ') {
       if(name[0].length() < 16) {
         name[0] += key;
+      }
+    }
+  }
+  if(joinn == 1) {
+    if(key == BACKSPACE && ipp.length() > 0) {
+      ipp = ipp.substring( 0, ipp.length()-1 );
+    }
+    if((key >= 'A' && key <= 'z') || key == ' ' || key == ':' || key == '.' || key == '-' || key >= '0' && key <= '9') {
+      if(ipp.length() < 50) {
+        ipp += key;
       }
     }
   }
@@ -465,7 +683,7 @@ void keyReleased() {
   if(key == ' ') {
     space = 0;
   }
-}*/
+}
 void render() {
   imageMode(CENTER);
   image(maps,x+width+camX,y+width+camY);
@@ -584,24 +802,28 @@ void shoot() {
     bulletm = 0;
     bulY = -y;
     bulX = -x;
+    lazer.play();
   }
   if(dir == down && bulleton == 0) {
     bulleton = 2;
     bulletm = 0;
     bulY = -y;
     bulX = -x;
+    lazer.play();
   }
   if(dir == left && bulleton == 0) {
     bulleton = 3;
     bulletm = 0;
     bulY = -y;
     bulX = -x;
+    lazer.play();
   }
   if(dir == right && bulleton == 0) {
     bulleton = 4;
     bulletm = 0;
     bulY = -y;
     bulX = -x;
+    lazer.play();
   }
 }
 void bulletrender() {
@@ -634,6 +856,9 @@ void bulletrender() {
         bulleton = 0;
       }
     }
+  }else{
+    bulX = 0;
+    bulY = 0;
   }
 }
 void enemy() {
@@ -722,6 +947,7 @@ void Edie1() {
 }
 void die() {
   if(kill != ""){kills[0] = kill + kills[0];}
+  saveStrings("data/dat.txt",kills);
   exitgame = 0;
   menu = 0;
   death = 1;
@@ -729,4 +955,30 @@ void die() {
 }
 void kill() {
   kill += "1";
+}
+void positions(){
+  if(masf != null){
+    for(int i = 0; i <= split(masf,'$').length-1; i++) {
+      String coll[] = split(masf, '$');
+      String col[] = split(coll[i], '=');if(col[0].equals(client.ip())){
+        //if the IP is itself
+      }else{
+        if(col[6].equals("down")){
+          image(Edown, x+width/2+camX-float(col[2]), y+height/2+camY-float(col[3]));
+        }
+        if(col[6].equals("up")){
+          image(Eup, x+width/2+camX-float(col[2]), y+height/2+camY-float(col[3]));
+        }
+        if(col[6].equals("left")){
+          image(Eleft, x+width/2+camX-float(col[2]), y+height/2+camY-float(col[3]));
+        }
+        if(col[6].equals("right")){
+          image(Eright, x+width/2+camX-float(col[2]), y+height/2+camY-float(col[3]));
+        }
+      }
+    }
+  }
+}
+void clientEvent(Client client) {
+  masf = client.readStringUntil('\n');
 }
